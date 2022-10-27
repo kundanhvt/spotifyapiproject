@@ -24,24 +24,12 @@ def get_spotify_response():
     return response
 
 
-def upload_data_into_container(type, conn_str, data):
-    file = f'spotify_{type}_{datetime.now().timestamp()}_scraped.json'
+def upload_data_into_container(conn_str, data):
+    file = f'spotify_{datetime.now().timestamp()}_scraped.json'
     blob_service_client = BlobServiceClient.from_connection_string(conn_str)
     blob_client = blob_service_client.get_blob_client(container = 'scrape', blob=file)
     upload_data =bytes(json.dumps(data,indent=4), 'utf-8')
     blob_client.upload_blob(upload_data)
-
-def filter_data(response):
-    single_data = []
-    album_data = []
-    response = response.json()
-    for item in response["albums"]["items"]:
-        if item["album_type"] == "single":
-            single_data.append(item)
-        elif item["album_type"] == "album":
-            album_data.append(item)
-
-    return [single_data,album_data]
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
@@ -50,9 +38,5 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     response = get_spotify_response()
     if response.status_code == 200:
-        single_data,album_data = filter_data(response)
-        upload_data_into_container('single',conn_str,single_data)
-        upload_data_into_container('album',conn_str,single_data)
-
-    
+        upload_data_into_container(conn_str,response.json())
     return func.HttpResponse('success fine!')

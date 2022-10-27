@@ -55,4 +55,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         upload_data_into_container('album',conn_str,single_data)
 
     
-    return func.HttpResponse('success')
+    return func.HttpResponse('success fine!')
